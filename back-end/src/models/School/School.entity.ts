@@ -1,21 +1,19 @@
-import {
-  Column,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
-import Wilder from "../Wilder/Wilder.entity";
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import Wilder from '../Wilder/Wilder.entity';
 
 @Entity()
 export default class School {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+	constructor(schoolName: string) {
+		this.schoolName = schoolName;
+	}
 
-  @Column()
-  @Index({ unique: true })
-  schoolName: string;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
-  @OneToMany(() => Wilder, (wilder) => wilder.school)
-  wilders: Wilder[];
+	@Column()
+	@Index({ unique: true })
+	schoolName: string;
+
+	@OneToMany(() => Wilder, (wilder) => wilder.school)
+	wilders: Wilder[];
 }

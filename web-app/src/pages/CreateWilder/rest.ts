@@ -4,7 +4,9 @@ import { WilderType } from "../../types";
 
 export async function createWilder(
   firstName: string,
-  lastName: string
+  lastName: string,
+  schoolName: string,
+  skillsNames: string[],
 ): Promise<WilderType> {
-  return query(WILDERS_PATH, HTTPVerb.POST, { firstName, lastName });
+  return query(WILDERS_PATH, HTTPVerb.POST, { firstName, lastName, schoolName, skillsNames });
 }
