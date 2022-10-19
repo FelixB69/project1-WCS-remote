@@ -1,46 +1,43 @@
-import express from 'express';
-import * as wildersControllers from './controllers/wilders';
-import * as schoolsControllers from './controllers/school';
+import "reflect-metadata";
+import { ApolloServer } from "apollo-server";
+import { ApolloServerPluginLandingPageLocalDefault } from "apollo-server-core";
+
 import SchoolRepository from './models/School/School.repository';
 import SkillRepository from './models/Skill/Skill.repository';
 import WilderRepository from './models/Wilder/Wilder.repository';
+import { buildSchema } from "type-graphql";
+import WilderResolver from "./resolvers/Wilder.resolver";
 
-const app = express();
-const PORT = 4000;
-const WILDERS_PATH = '/wilders';
-const SCHOOLS_PATH = '/schools';
+const startServer = async () => {
+	const server = new ApolloServer({
+		schema: await buildSchema({
+			resolvers: [WilderResolver]
+		}),
+		csrfPrevention: true,
+		cache: "bounded",
+		/**
+		 * What's up with this embed: true option?
+		 * These are our recommended settings for using AS;
+		 * they aren't the defaults in AS3 for backwards-compatibility reasons but
+		 * will be the defaults in AS4. For production environments, use
+		 * ApolloServerPluginLandingPageProductionDefault instead.
+		 **/
+		plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
+	  });
 
-app.use(express.json());
 
-app.get('/', function (req, res) {
-	res.send('Hello world from Express!');
-});
+// The `listen` method launches a web server.
+const { url } = await server.listen();
+await SkillRepository.initializeRepository();
+await SchoolRepository.initializeRepository();
+await WilderRepository.initializeRepository();
 
-// Wilders Routes
+await SkillRepository.initializeSkills();
+await SchoolRepository.initializeSchools();
+await WilderRepository.initializeWilders();
 
-app.get(WILDERS_PATH, wildersControllers.get);
-app.post(WILDERS_PATH, wildersControllers.post);
-app.put(`${WILDERS_PATH}/:id`, wildersControllers.put);
-app.delete(`${WILDERS_PATH}/:id`, wildersControllers.del);
-app.post(`${WILDERS_PATH}/:id/skills`, wildersControllers.addSkill);
+console.log(`🚀  Server ready at ${url}`);
+};
 
-// Schools Routes
+startServer();
 
-app.get(SCHOOLS_PATH, schoolsControllers.get);
-app.post(SCHOOLS_PATH, schoolsControllers.post);
-app.delete(`${SCHOOLS_PATH}/:id`, schoolsControllers.del);
-
-async function start() {
-	await SkillRepository.initializeRepository();
-	await SchoolRepository.initializeRepository();
-	await WilderRepository.initializeRepository();
-
-	await SkillRepository.initializeSkills();
-	await SchoolRepository.initializeSchools();
-	await WilderRepository.initializeWilders();
-	app.listen(PORT, () => {
-		console.log(`Server running on port ${PORT} 👍`);
-	});
-}
-
-start();
